@@ -155,7 +155,11 @@ setup_xkb_tabs (GladeXML * dialog, GConfChangeSet * changeset)
 
 	engine = xkl_engine_get_instance (GDK_DISPLAY ());
 	config_registry = xkl_config_registry_get_instance (engine);
+#ifdef HAVE_XKL_4
+	xkl_config_registry_load (config_registry, FALSE);
+#else
 	xkl_config_registry_load (config_registry);
+#endif
 
 	gkbd_keyboard_config_init (&initial_config, xkb_gconf_client,
 				   engine);
