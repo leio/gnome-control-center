@@ -355,7 +355,7 @@ list_dir (SMBCCTX      *smb_context,
       smbclient_opendir = smbc_getFunctionOpendir (smb_context);
 
       dir = smbclient_opendir (smb_context, dirname);
-      if (!dir && errno == EACCES)
+      if (!dir && errno == EACCES && data->hostname_set)
         {
           if (data->auth_if_needed)
             {
