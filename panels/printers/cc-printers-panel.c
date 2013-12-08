@@ -2425,8 +2425,8 @@ test_page_cb (GtkButton *button,
 
   if (printer_name)
     {
-      const gchar  *const dirs[] = { "/usr/share/cups",
-                                     "/usr/local/share/cups",
+      const gchar  *const dirs[] = { REALDATADIR "/cups",
+                                     PREFIX "/local/share/cups",
                                      NULL };
       const gchar  *testprint[] = { "%s/data/testprint",
                                     "%s/data/testprint.ps",

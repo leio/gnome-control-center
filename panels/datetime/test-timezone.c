@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 #include "cc-timezone-map.h"
 
-#define TZ_DIR "/usr/share/zoneinfo/"
+#define TZ_DIR REALDATADIR "/zoneinfo/"
 
 static GList *
 get_timezone_list (GList *tzs,

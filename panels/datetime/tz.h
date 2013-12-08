@@ -29,9 +29,9 @@
 #include <glib.h>
 
 #ifndef __sun
-#  define TZ_DATA_FILE "/usr/share/zoneinfo/zone.tab"
+#  define TZ_DATA_FILE REALDATADIR "/zoneinfo/zone.tab"
 #else
-#  define TZ_DATA_FILE "/usr/share/lib/zoneinfo/tab/zone_sun.tab"
+#  define TZ_DATA_FILE REALDATADIR "/lib/zoneinfo/tab/zone_sun.tab"
 #endif
 
 typedef struct _TzDB TzDB;
