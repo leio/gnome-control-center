@@ -21,6 +21,7 @@ AM_CPPFLAGS =						\
 	$(DATETIME_PANEL_CFLAGS)			\
 	-DGNOMELOCALEDIR="\"$(datadir)/locale\""	\
 	-DGNOMECC_DATA_DIR="\"$(pkgdatadir)\""		\
+	-DREALDATADIR="\"$(datadir)\""                  \
 	$(NULL)
 
 noinst_PROGRAMS = test-timezone-gfx test-endianess test-timezone

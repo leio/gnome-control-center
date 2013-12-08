@@ -7,6 +7,9 @@ AM_CPPFLAGS = 						\
 	$(SMBCLIENT_CFLAGS)				\
 	-I$(top_srcdir)/shell/				\
 	-DGNOMELOCALEDIR="\"$(datadir)/locale\""	\
+	-DREALDATADIR="\"$(datadir)\""                  \
+	-DPREFIX="\"$(prefix)\""                        \
+	-DLIBEXECDIR="\"$(libexecdir)\""                \
 	$(NULL)
 
 noinst_LTLIBRARIES = libprinters.la
