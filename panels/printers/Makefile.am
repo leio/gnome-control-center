@@ -10,6 +10,9 @@ AM_CPPFLAGS = 						\
 	-I$(top_srcdir)/shell/				\
 	-DGNOMELOCALEDIR="\"$(datadir)/locale\""	\
 	-DTEST_SRCDIR=\""$(srcdir)/"\"			\
+	-DREALDATADIR="\"$(datadir)\""                  \
+	-DPREFIX="\"$(prefix)\""                        \
+	-DLIBEXECDIR="\"$(libexecdir)\""                \
 	$(NULL)
 
 noinst_LTLIBRARIES = libprinters.la
