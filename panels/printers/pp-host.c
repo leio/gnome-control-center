@@ -250,7 +250,7 @@ _pp_host_get_snmp_devices_thread (GSimpleAsyncResult *res,
   data->devices->devices = NULL;
 
   argv = g_new0 (gchar *, 3);
-  argv[0] = g_strdup ("/usr/lib/cups/backend/snmp");
+  argv[0] = g_strdup (LIBEXECDIR "/cups/backend/snmp");
   argv[1] = g_strdup (priv->hostname);
 
   /* Use SNMP to get printer's informations */
