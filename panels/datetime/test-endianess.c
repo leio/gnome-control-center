@@ -38,11 +38,11 @@ int main (int argc, char **argv)
 		return 0;
 	}
 
-	dir = g_dir_open ("/usr/share/i18n/locales/", 0, NULL);
+	dir = g_dir_open (REALDATADIR "/i18n/locales/", 0, NULL);
 	if (dir == NULL) {
 		/* Try with /usr/share/locale/
 		 * https://bugzilla.gnome.org/show_bug.cgi?id=646780 */
-		dir = g_dir_open ("/usr/share/locale/", 0, NULL);
+		dir = g_dir_open (REALDATADIR "/locale/", 0, NULL);
 		if (dir == NULL) {
 			return 1;
 		}
