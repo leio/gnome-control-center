@@ -58,14 +58,12 @@ gnome_control_center_LDADD =						\
 	$(top_builddir)/panels/common/liblanguage.la			\
 	$(top_builddir)/panels/common/libdevice.la			\
 	$(top_builddir)/panels/background/libbackground.la		\
-	$(top_builddir)/panels/color/libcolor.la			\
 	$(top_builddir)/panels/datetime/libdate_time.la			\
 	$(top_builddir)/panels/display/libdisplay.la			\
 	$(top_builddir)/panels/info/libinfo.la				\
 	$(top_builddir)/panels/keyboard/libkeyboard.la			\
 	$(top_builddir)/panels/mouse/libmouse-properties.la		\
 	$(top_builddir)/panels/notifications/libnotifications.la	\
-	$(top_builddir)/panels/online-accounts/libonline-accounts.la	\
 	$(top_builddir)/panels/power/libpower.la			\
 	$(top_builddir)/panels/privacy/libprivacy.la			\
 	$(top_builddir)/panels/region/libregion.la			\
@@ -89,6 +87,14 @@ endif
 
 if BUILD_BLUETOOTH
 gnome_control_center_LDADD += $(top_builddir)/panels/bluetooth/libbluetooth.la
+endif
+
+if BUILD_COLOR
+gnome_control_center_LDADD += $(top_builddir)/panels/color/libcolor.la
+endif
+
+if BUILD_ONLINE_ACCOUNTS
+gnome_control_center_LDADD += $(top_builddir)/panels/online-accounts/libonline-accounts.la
 endif
 
 # Dbus service file
