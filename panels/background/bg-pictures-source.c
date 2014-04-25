@@ -23,12 +23,16 @@
 
 #include "bg-pictures-source.h"
 
+#ifdef BUILD_ONLINE_ACCOUNTS
 #include "cc-background-grilo-miner.h"
+#endif
 #include "cc-background-item.h"
 
 #include <string.h>
 #include <gio/gio.h>
+#ifdef BUILD_ONLINE_ACCOUNTS
 #include <grilo.h>
+#endif
 #include <libgnome-desktop/gnome-desktop-thumbnail.h>
 #include <gdesktop-enums.h>
 
@@ -45,7 +49,9 @@ struct _BgPicturesSourcePrivate
 {
   GCancellable *cancellable;
 
+#ifdef BUILD_ONLINE_ACCOUNTS
   CcBackgroundGriloMiner *grl_miner;
+#endif
 
   GnomeDesktopThumbnailFactory *thumb_factory;
 
@@ -109,7 +115,9 @@ bg_pictures_source_dispose (GObject *object)
       g_clear_object (&priv->cancellable);
     }
 
+#ifdef BUILD_ONLINE_ACCOUNTS
   g_clear_object (&priv->grl_miner);
+#endif
   g_clear_object (&priv->thumb_factory);
 
   G_OBJECT_CLASS (bg_pictures_source_parent_class)->dispose (object);
@@ -443,10 +451,13 @@ add_single_file (BgPicturesSource *bg_source,
     {
       GFile *native_file;
       GFile *thumbnail_file = NULL;
+#ifdef BUILD_ONLINE_ACCOUNTS
       GrlMedia *media;
+#endif
       gchar *native_dir;
       gchar *native_path;
 
+#ifdef BUILD_ONLINE_ACCOUNTS
       media = g_object_get_data (G_OBJECT (file), "grl-media");
       if (media != NULL)
         {
@@ -459,6 +470,7 @@ add_single_file (BgPicturesSource *bg_source,
           thumbnail_uri = grl_media_get_thumbnail (media);
           thumbnail_file = g_file_new_for_uri (thumbnail_uri);
         }
+#endif /* BUILD_ONLINE_ACCOUNTS */
 
       native_path = gnome_desktop_thumbnail_path_for_uri (source_uri, GNOME_DESKTOP_THUMBNAIL_SIZE_LARGE);
       native_file = g_file_new_for_path (native_path);
@@ -516,6 +528,7 @@ add_single_file_from_info (BgPicturesSource *bg_source,
   return add_single_file (bg_source, file, content_type, mtime);
 }
 
+#ifdef BUILD_ONLINE_ACCOUNTS
 static gboolean
 add_single_file_from_media (BgPicturesSource *bg_source,
                             GFile            *file,
@@ -535,6 +548,7 @@ add_single_file_from_media (BgPicturesSource *bg_source,
 
   return add_single_file (bg_source, file, content_type, (guint64) mtime_unix);
 }
+#endif /* BUILD_ONLINE_ACCOUNTS */
 
 gboolean
 bg_pictures_source_add (BgPicturesSource *bg_source,
@@ -844,6 +858,7 @@ files_changed_cb (GFileMonitor      *monitor,
     }
 }
 
+#ifdef BUILD_ONLINE_ACCOUNTS
 static void
 media_found_cb (BgPicturesSource *self, GrlMedia *media)
 {
@@ -855,6 +870,7 @@ media_found_cb (BgPicturesSource *self, GrlMedia *media)
   g_object_set_data_full (G_OBJECT (file), "grl-media", g_object_ref (media), g_object_unref);
   add_single_file_from_media (self, file, media);
 }
+#endif /* BUILD_ONLINE_ACCOUNTS */
 
 static void
 bg_pictures_source_init (BgPicturesSource *self)
@@ -921,9 +937,11 @@ bg_pictures_source_init (BgPicturesSource *self)
 
   g_object_unref (dir);
 
+#ifdef BUILD_ONLINE_ACCOUNTS
   priv->grl_miner = cc_background_grilo_miner_new ();
   g_signal_connect_swapped (priv->grl_miner, "media-found", G_CALLBACK (media_found_cb), self);
   cc_background_grilo_miner_start (priv->grl_miner);
+#endif /* BUILD_ONLINE_ACCOUNTS */
 
   priv->thumb_factory =
     gnome_desktop_thumbnail_factory_new (GNOME_DESKTOP_THUMBNAIL_SIZE_LARGE);
