@@ -227,13 +227,22 @@ if test "x$have_udev" = xyes ; then
 fi
 AM_CONDITIONAL(HAVE_UDEV, [test "x$have_udev" = "xyes"])
 
-PKG_CHECK_MODULES(WAYLAND, gdk-wayland-3.0, have_wayland=yes, have_wayland=no)
-if test "x$have_wayland" = xyes ; then
-	if test "x$have_udev" != xyes ; then
-		AC_MSG_ERROR([udev is required for Wayland support])
-	fi
-fi
-AM_CONDITIONAL(HAVE_WAYLAND, [test "x$have_wayland" = "xyes"])
+AC_ARG_ENABLE(
+  [wayland],
+  AS_HELP_STRING([--disable-wayland], [disable wayland support]),
+  [],
+  enable_wayland=auto
+)
+
+AS_IF([test "$enable_wayland" != "no"],
+      [
+        AS_IF([test "x$have_udev" = xno],
+              [AC_MSG_ERROR([udev is required for Wayland support])],
+              [AC_DEFINE(HAVE_UDEV, 1, [System has udev])])
+
+        PKG_CHECK_MODULES(WAYLAND, gdk-wayland-3.0)
+])
+AM_CONDITIONAL(HAVE_WAYLAND, [test "x$enable_wayland" != "xno"])
 
 # Panels that must be built on Linux systems
 linux_error_or_warn()
