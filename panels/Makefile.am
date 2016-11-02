@@ -2,11 +2,9 @@ SUBDIRS= \
 	common \
 	background \
 	power \
-	color \
 	display \
 	mouse \
 	notifications \
-	online-accounts \
 	region \
 	info \
 	sound \
@@ -17,6 +15,10 @@ SUBDIRS= \
 	search \
 	privacy \
 	sharing
+
+if BUILD_COLOR
+SUBDIRS += color
+endif
 
 if BUILD_WACOM
 SUBDIRS += wacom
@@ -32,6 +34,10 @@ endif
 
 if BUILD_BLUETOOTH
 SUBDIRS += bluetooth
+endif
+
+if BUILD_ONLINE_ACCOUNTS
+SUBDIRS += online-accounts
 endif
 
 -include $(top_srcdir)/git.mk

@@ -1882,7 +1882,7 @@ add_power_saving_section (CcPowerPanel *self)
                     G_CALLBACK (wifi_switch_changed), self);
 #endif
 
-#ifdef HAVE_BLUETOOTH
+#ifdef BUILD_BLUETOOTH
   priv->bt_rfkill = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
 						   G_DBUS_PROXY_FLAGS_NONE,
 						   NULL,

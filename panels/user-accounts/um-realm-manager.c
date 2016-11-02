@@ -22,7 +22,9 @@
 
 #include "um-realm-manager.h"
 
+#ifdef HAVE_KERBEROS
 #include <krb5/krb5.h>
+#endif
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -698,6 +700,7 @@ login_closure_free (gpointer data)
         g_slice_free (LoginClosure, login);
 }
 
+#ifdef HAVE_KERBEROS
 static krb5_error_code
 login_perform_kinit (krb5_context k5,
                      const gchar *realm,
@@ -761,12 +764,14 @@ login_perform_kinit (krb5_context k5,
 
         return code;
 }
+#endif /* HAVE_KERBEROS */
 
 static void
 kinit_thread_func (GSimpleAsyncResult *async,
                    GObject *object,
                    GCancellable *cancellable)
 {
+#ifdef HAVE_KERBEROS
         LoginClosure *login = g_simple_async_result_get_op_res_gpointer (async);
         krb5_context k5 = NULL;
         krb5_error_code code;
@@ -844,6 +849,10 @@ kinit_thread_func (GSimpleAsyncResult *async,
 
         if (k5)
                 krb5_free_context (k5);
+#else /* HAVE_KERBEROS */
+        g_simple_async_result_set_error (async, UM_REALM_ERROR, UM_REALM_ERROR_GENERIC,
+                                         _("gnome-control-center was built without kerberos support"));
+#endif
 }
 
 void
