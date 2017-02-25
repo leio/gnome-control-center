@@ -26,11 +26,11 @@ test_endianess (void)
 	GDir *dir;
 	const char *name;
 
-	dir = g_dir_open ("/usr/share/i18n/locales/", 0, NULL);
+	dir = g_dir_open (REALDATADIR "/i18n/locales/", 0, NULL);
 	if (dir == NULL) {
 		/* Try with /usr/share/locale/
 		 * https://bugzilla.gnome.org/show_bug.cgi?id=646780 */
-		dir = g_dir_open ("/usr/share/locale/", 0, NULL);
+		dir = g_dir_open (REALDATADIR "/locale/", 0, NULL);
 		if (dir == NULL) {
 			g_assert_not_reached ();
 		}

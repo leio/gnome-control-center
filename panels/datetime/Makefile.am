@@ -23,6 +23,7 @@ AM_CPPFLAGS =						\
 	$(DATETIME_PANEL_CFLAGS)			\
 	-DGNOMELOCALEDIR="\"$(datadir)/locale\""	\
 	-DGNOMECC_DATA_DIR="\"$(pkgdatadir)\""		\
+	-DREALDATADIR="\"$(datadir)\""                  \
 	$(NULL)
 
 # test-timezone is still too noisy
