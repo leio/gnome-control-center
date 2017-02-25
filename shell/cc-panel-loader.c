@@ -33,7 +33,9 @@ extern GType cc_background_panel_get_type (void);
 #ifdef BUILD_BLUETOOTH
 extern GType cc_bluetooth_panel_get_type (void);
 #endif /* BUILD_BLUETOOTH */
+#ifdef BUILD_COLOR
 extern GType cc_color_panel_get_type (void);
+#endif /* BUILD_COLOR */
 extern GType cc_date_time_panel_get_type (void);
 extern GType cc_display_panel_get_type (void);
 extern GType cc_info_panel_get_type (void);
@@ -47,7 +49,9 @@ extern GType cc_network_panel_get_type (void);
 extern GType cc_wifi_panel_get_type (void);
 #endif /* BUILD_NETWORK */
 extern GType cc_notifications_panel_get_type (void);
+#ifdef BUILD_ONLINE_ACCOUNTS
 extern GType cc_goa_panel_get_type (void);
+#endif /* BUILD_ONLINE_ACCOUNTS */
 extern GType cc_power_panel_get_type (void);
 extern GType cc_printers_panel_get_type (void);
 extern GType cc_privacy_panel_get_type (void);
@@ -79,7 +83,9 @@ static struct {
 #ifdef BUILD_BLUETOOTH
   PANEL_TYPE("bluetooth",        cc_bluetooth_panel_get_type    ),
 #endif
+#ifdef BUILD_COLOR
   PANEL_TYPE("color",            cc_color_panel_get_type        ),
+#endif
   PANEL_TYPE("datetime",         cc_date_time_panel_get_type    ),
   PANEL_TYPE("display",          cc_display_panel_get_type      ),
   PANEL_TYPE("info",             cc_info_panel_get_type         ),
@@ -93,7 +99,9 @@ static struct {
   PANEL_TYPE("wifi",             cc_wifi_panel_get_type         ),
 #endif
   PANEL_TYPE("notifications",    cc_notifications_panel_get_type),
+#ifdef BUILD_ONLINE_ACCOUNTS
   PANEL_TYPE("online-accounts",  cc_goa_panel_get_type          ),
+#endif
   PANEL_TYPE("power",            cc_power_panel_get_type        ),
   PANEL_TYPE("printers",         cc_printers_panel_get_type     ),
   PANEL_TYPE("privacy",          cc_privacy_panel_get_type      ),
