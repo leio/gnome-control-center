@@ -120,10 +120,6 @@ LIBGD_INIT([_view-common static])
 PKG_CHECK_MODULES(LIBLANGUAGE, $COMMON_MODULES gnome-desktop-3.0 fontconfig)
 PKG_CHECK_MODULES(LIBSHORTCUTS, $COMMON_MODULES x11)
 PKG_CHECK_MODULES(SHELL, $COMMON_MODULES x11 polkit-gobject-1 >= $POLKIT_REQUIRED_VERSION)
-PKG_CHECK_MODULES(BACKGROUND_PANEL, $COMMON_MODULES cairo-gobject libxml-2.0 gnome-desktop-3.0
-                  gdk-pixbuf-2.0 >= $GDKPIXBUF_REQUIRED_VERSION
-                  goa-1.0 >= $GOA_REQUIRED_VERSION
-                  grilo-0.3 >= $GRILO_REQUIRED_VERSION)
 PKG_CHECK_MODULES(DATETIME_PANEL, $COMMON_MODULES
                   gnome-desktop-3.0 >= $GNOME_DESKTOP_REQUIRED_VERSION
                   polkit-gobject-1 >= $POLKIT_REQUIRED_VERSION
@@ -141,12 +137,58 @@ PKG_CHECK_MODULES(MOUSE_PANEL, $COMMON_MODULES xi >= 1.2
 PKG_CHECK_MODULES(NETWORK_PANEL, $COMMON_MODULES gmodule-2.0
                   polkit-gobject-1 >= $POLKIT_REQUIRED_VERSION)
 PKG_CHECK_MODULES(NOTIFICATIONS_PANEL, $COMMON_MODULES)
-PKG_CHECK_MODULES(ONLINE_ACCOUNTS_PANEL, $COMMON_MODULES goa-1.0 goa-backend-1.0 >= $GOA_REQUIRED_VERSION)
-PKG_CHECK_MODULES(COLOR_PANEL, $COMMON_MODULES
-                  colord >= $COLORD_REQUIRED_VERSION
-                  colord-gtk >= $COLORD_GTK_REQUIRED_VERSION
-                  libsoup-2.4
-                  gnome-desktop-3.0 >= $GNOME_DESKTOP_REQUIRED_VERSION)
+
+build_online_accounts=no
+background_online_accounts=
+AC_ARG_ENABLE([goa],
+              AS_HELP_STRING([--disable-goa],
+                             [disable online accounts management panel]),
+              [],
+              [enable_goa=auto])
+
+AS_IF([test "$enable_goa" != "no"],
+      [PKG_CHECK_MODULES([ONLINE_ACCOUNTS_PANEL],
+                         [$COMMON_MODULES goa-1.0 goa-backend-1.0 >= $GOA_REQUIRED_VERSION],
+                         [
+                           AC_DEFINE(BUILD_ONLINE_ACCOUNTS, 1, [Define to 1 to build the Online Accounts panel])
+                           build_online_accounts=yes
+                           background_goa_dependencies="goa-1.0 >= $GOA_REQUIRED_VERSION grilo-0.3 >= $GRILO_REQUIRED_VERSION"
+                         ], [
+                           AS_IF([test "$enable_goa" = "yes"],
+                                 [AC_MSG_ERROR([gnome-online-accounts support requested but not found])])
+                         ])
+       ])
+AM_CONDITIONAL(BUILD_ONLINE_ACCOUNTS, test "$build_online_accounts" = "yes")
+
+PKG_CHECK_MODULES(BACKGROUND_PANEL, $COMMON_MODULES cairo-gobject libxml-2.0 gnome-desktop-3.0
+                  gdk-pixbuf-2.0 >= $GDKPIXBUF_REQUIRED_VERSION
+                  $background_goa_dependencies)
+
+build_color=no
+AC_ARG_ENABLE([color],
+              AS_HELP_STRING([--disable-color],
+                             [disable color management panel]),
+              [],
+              [enable_color=auto])
+
+AS_IF([test "$enable_color" != "no"],
+      [PKG_CHECK_MODULES([COLOR_PANEL],
+                         [
+                           $COMMON_MODULES
+                           colord >= $COLORD_REQUIRED_VERSION
+                           colord-gtk >= $COLORD_GTK_REQUIRED_VERSION
+                           libsoup-2.4
+                           gnome-desktop-3.0 >= $GNOME_DESKTOP_REQUIRED_VERSION
+                         ], [
+                           AC_DEFINE(BUILD_COLOR, 1, [Define to 1 to build the Color panel])
+                           build_color=yes
+                         ], [
+                           AS_IF([test "$enable_color" = "yes"],
+                                 [AC_MSG_ERROR([colord support requested but not found])])
+                         ])
+      ])
+AM_CONDITIONAL(BUILD_COLOR, test "$build_color" = "yes")
+
 PKG_CHECK_MODULES(PRINTERS_PANEL, $COMMON_MODULES
                   polkit-gobject-1 >= $POLKIT_REQUIRED_VERSION
                   smbclient)
@@ -255,17 +297,27 @@ else
 fi
 
 # Check for gnome-bluetooth
-PKG_CHECK_MODULES(BLUETOOTH, $COMMON_MODULES gnome-bluetooth-1.0 >= 3.18.2,
-		  [have_bluetooth=yes], have_bluetooth=no)
-if test "x$have_bluetooth" = xyes ; then
-	AC_DEFINE(BUILD_BLUETOOTH, 1, [Define to 1 to build the Bluetooth panel])
-else
-	linux_usb_error_or_warn "*** Bluetooth panel will not be built"
-fi
-AM_CONDITIONAL(BUILD_BLUETOOTH, [test x$have_bluetooth = xyes])
-if test x${have_bluetooth} = xyes; then
-  AC_DEFINE(HAVE_BLUETOOTH, 1, [Define to 1 if bluetooth support is available])
-fi
+have_bluetooth=no
+AC_ARG_ENABLE([bluetooth],
+              AS_HELP_STRING([--disable-bluetooth],
+                             [disable bluetooth management panel]),
+              [],
+              [enable_bluetooth=auto])
+
+AS_IF([test "$enable_bluetooth" = "yes"],
+      [PKG_CHECK_MODULES([BLUETOOTH],
+                         [$COMMON_MODULES gnome-bluetooth-1.0 >= 3.18.2],
+                         [
+                           AC_DEFINE(BUILD_BLUETOOTH, 1, [Define to 1 to build the Bluetooth panel])
+                           have_bluetooth=yes
+                         ],
+                         [
+                           have_bluetooth=no
+                           AS_IF([test "$enable_bluetooth" = "yes"],
+                                 [AC_MSG_ERROR([bluetooth support requested but not found])])
+                         ])
+      ])
+AM_CONDITIONAL(BUILD_BLUETOOTH, [test "$have_bluetooth" = "yes"])
 
 # Check for CUPS 1.4 or newer
 AC_PROG_SED
@@ -320,32 +372,52 @@ fi
 AM_CONDITIONAL(BUILD_CHEESE, test x${have_cheese} = xyes)
 
 # Wacom
-PKG_CHECK_MODULES(WACOM_PANEL, $COMMON_MODULES
-                  gnome-settings-daemon >= $GSD_REQUIRED_VERSION
-                  xi >= 1.2 x11 libwacom >= $LIBWACOM_REQUIRED_VERSION
-                  gnome-desktop-3.0 >= $GNOME_DESKTOP_REQUIRED_VERSION
-                  clutter-gtk-1.0
-                  clutter-1.0 >= $CLUTTER_REQUIRED_VERSION,
-                  [have_wacom=yes], [have_wacom=no])
+AC_ARG_ENABLE([wacom],
+              AS_HELP_STRING([--disable-wacom],
+                             [disable wacom management panel]),
+              [],
+              [enable_wacom=yes])
+AS_IF([test "x$enable_wacom" = "xyes"],
+      [PKG_CHECK_MODULES([WACOM_PANEL],
+                         [
+                           $COMMON_MODULES
+                           gnome-settings-daemon >= $GSD_REQUIRED_VERSION
+                           xi >= 1.2 x11 libwacom >= $LIBWACOM_REQUIRED_VERSION
+                           gnome-desktop-3.0 >= $GNOME_DESKTOP_REQUIRED_VERSION
+                           clutter-gtk-1.0
+                           clutter-1.0 >= $CLUTTER_REQUIRED_VERSION
+                         ], [
+                           have_wacom=yes
+                           AC_DEFINE(BUILD_WACOM, 1, [Define to 1 to build the Wacom panel])
+                           AC_DEFINE(HAVE_WACOM, 1, [Define to 1 is Wacom is supportted])
+                         ], [
+                           have_wacom=no
+                           AC_MSG_ERROR([wacom support requested but not found])
+                         ])
+      ])
 
-if test "x$have_wacom" = xyes ; then
-	AC_DEFINE(BUILD_WACOM, 1, [Define to 1 to build the Wacom panel])
-	AC_DEFINE(HAVE_WACOM, 1, [Define to 1 is Wacom is supportted])
-else
-	linux_usb_error_or_warn "*** Wacom panel will not be built"
-fi
 AM_CONDITIONAL(BUILD_WACOM, [test x${have_wacom} = xyes])
 
 # Kerberos kerberos support
-AC_PATH_PROG(KRB5_CONFIG, krb5-config, no)
-if test "$KRB5_CONFIG" = "no"; then
-  AC_MSG_ERROR([krb5-config executable not found in your path - should be installed with the kerberos libraries])
-fi
+AC_ARG_ENABLE([kerberos],
+              AS_HELP_STRING([--disable-kerberos],
+                             [disable kerberos support (default: enabled)]),
+              [],
+              [enable_kerberos=yes])
 
-AC_MSG_CHECKING(for krb5 libraries and flags)
-KRB5_CFLAGS="`$KRB5_CONFIG --cflags`"
-KRB5_LIBS="`$KRB5_CONFIG --libs`"
-AC_MSG_RESULT($KRB5_CFLAGS $KRB5_LIBS)
+AS_IF([test "$enable_kerberos" != "no"],
+      [
+        AC_PATH_PROG(KRB5_CONFIG, krb5-config, no)
+
+        AS_IF([test "$KRB5_CONFIG" = "no"],
+              AC_MSG_ERROR([krb5-config executable not found in your path - should be installed with the kerberos libraries]))
+
+        AC_MSG_CHECKING([for krb5 libraries and flags])
+        KRB5_CFLAGS="`$KRB5_CONFIG --cflags`"
+        KRB5_LIBS="`$KRB5_CONFIG --libs`"
+        AC_MSG_RESULT($KRB5_CFLAGS $KRB5_LIBS)
+        AC_DEFINE(HAVE_KERBEROS, 1, [defined if krb5 is available])
+      ])
 
 AC_SUBST(KRB5_CFLAGS)
 AC_SUBST(KRB5_LIBS)
@@ -577,10 +649,23 @@ if test "x$have_bluetooth" = "xyes"; then
 else
 	AC_MSG_NOTICE([   Bluetooth panel disabled])
 fi
+
+if test "x$build_color" = "xyes"; then
+	AC_MSG_NOTICE([** colord (Color panel)])
+else
+	AC_MSG_NOTICE([   Color panel disabled])
+fi
+
+
 if test "x$have_cheese" = "xyes"; then
 	AC_MSG_NOTICE([** Cheese (Users panel webcam support)])
 else
 	AC_MSG_NOTICE([   Users panel webcam support disabled])
+fi
+if test "x$build_online_accounts" = "xyes"; then
+       AC_MSG_NOTICE([** gnome-online-accounts (Online Accounts panel)])
+else
+       AC_MSG_NOTICE([   Online Accounts panel disabled])
 fi
 if test "x$have_wacom" = "xyes"; then
 	AC_MSG_NOTICE([** wacom (Wacom tablet panel)])

@@ -27,8 +27,6 @@ libbackground_chooser_la_SOURCES =	\
 	$(BUILT_SOURCES)		\
 	cc-background-chooser-dialog.c	\
 	cc-background-chooser-dialog.h	\
-	cc-background-grilo-miner.c	\
-	cc-background-grilo-miner.h	\
 	cc-background-item.c		\
 	cc-background-item.h		\
 	cc-background-xml.c		\
@@ -41,6 +39,12 @@ libbackground_chooser_la_SOURCES =	\
 	bg-wallpapers-source.h		\
 	bg-colors-source.c		\
 	bg-colors-source.h
+
+if BUILD_ONLINE_ACCOUNTS
+libbackground_chooser_la_SOURCES +=	\
+	cc-background-grilo-miner.c	\
+	cc-background-grilo-miner.h
+endif
 
 libbackground_chooser_la_LIBADD = $(PANEL_LIBS) $(BACKGROUND_PANEL_LIBS)
 
