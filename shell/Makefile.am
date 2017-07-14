@@ -91,8 +91,11 @@ gnome_control_center_LDADD =						\
 	$(top_builddir)/panels/sharing/libsharing.la			\
 	$(top_builddir)/panels/sound/libsound.la			\
 	$(top_builddir)/panels/universal-access/libuniversal-access.la	\
-	$(top_builddir)/panels/user-accounts/libuser-accounts.la	\
-	$(top_builddir)/panels/printers/libprinters.la
+	$(top_builddir)/panels/user-accounts/libuser-accounts.la
+
+if BUILD_PRINTERS
+gnome_control_center_LDADD += $(top_builddir)/panels/printers/libprinters.la
+endif
 
 if BUILD_WACOM
 gnome_control_center_LDADD += $(top_builddir)/panels/wacom/libwacom-properties.la

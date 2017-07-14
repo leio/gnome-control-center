@@ -14,8 +14,11 @@ SUBDIRS= \
 	datetime \
 	search \
 	privacy \
-	sharing \
-	printers
+	sharing
+
+if BUILD_PRINTERS
+SUBDIRS += printers
+endif
 
 if BUILD_COLOR
 SUBDIRS += color
