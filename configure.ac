@@ -189,9 +189,59 @@ AS_IF([test "$enable_color" != "no"],
       ])
 AM_CONDITIONAL(BUILD_COLOR, test "$build_color" = "yes")
 
-PKG_CHECK_MODULES(PRINTERS_PANEL, $COMMON_MODULES
-                  polkit-gobject-1 >= $POLKIT_REQUIRED_VERSION
-                  smbclient)
+# Check for CUPS 1.4 or newer
+build_printers=no
+AC_PROG_SED
+
+AC_ARG_ENABLE([cups],
+        AS_HELP_STRING([--disable-cups], [disable printer management panel]),
+        [],
+        enable_cups=yes
+)
+
+AS_IF([test "x$enable_cups" != "xno"],
+      [
+        PKG_CHECK_MODULES(PRINTERS_PANEL, $COMMON_MODULES
+                          polkit-gobject-1 >= $POLKIT_REQUIRED_VERSION
+                          smbclient)
+
+        AC_PATH_PROG(CUPS_CONFIG, cups-config)
+
+        if test x$CUPS_CONFIG = x; then
+          AC_MSG_ERROR([cups-config not found])
+        fi
+
+        CUPS_API_VERSION=`$CUPS_CONFIG --api-version`
+        CUPS_API_MAJOR=`echo $ECHO_N $CUPS_API_VERSION | cut -d . -f 1`
+        CUPS_API_MINOR=`echo $ECHO_N $CUPS_API_VERSION | cut -d . -f 2`
+
+        AC_CHECK_HEADERS([cups/cups.h cups/http.h cups/ipp.h cups/ppd.h],,
+                         AC_MSG_ERROR([CUPS headers not found]))
+
+        if ! test $CUPS_API_MAJOR -gt 1 -o \
+                  $CUPS_API_MAJOR -eq 1 -a $CUPS_API_MINOR -ge 4 ; then
+          AC_MSG_ERROR([CUPS 1.4 or newer not found])
+        fi
+
+        # https://bugzilla.gnome.org/show_bug.cgi?id=696766
+        CUPS_CPPFLAGS=""
+        if test $CUPS_API_MAJOR -gt 1 -o \
+                $CUPS_API_MAJOR -eq 1 -a $CUPS_API_MINOR -ge 6 ; then
+           CUPS_CPPFLAGS=-D_PPD_DEPRECATED=""
+        fi
+
+        CUPS_CFLAGS=`$CUPS_CONFIG --cflags | $SED -e 's/-O\w*//g' -e 's/-m\w*//g'`
+        CUPS_LIBS=`$CUPS_CONFIG --libs`
+
+        AC_SUBST(CUPS_CPPFLAGS)
+        AC_SUBST(CUPS_CFLAGS)
+        AC_SUBST(CUPS_LIBS)
+        build_printers=yes
+        AC_DEFINE(BUILD_PRINTERS, 1, [Define to 1 to build the Printers panel])
+      ]
+)
+AM_CONDITIONAL(BUILD_PRINTERS, test "x$build_printers" = "xyes")
+
 PKG_CHECK_MODULES(PRIVACY_PANEL, $COMMON_MODULES)
 PKG_CHECK_MODULES(REGION_PANEL, $COMMON_MODULES
                   polkit-gobject-1 >= $POLKIT_REQUIRED_VERSION
@@ -334,40 +384,6 @@ AS_IF([test "$enable_bluetooth" = "yes"],
                          ])
       ])
 AM_CONDITIONAL(BUILD_BLUETOOTH, [test "$have_bluetooth" = "yes"])
-
-# Check for CUPS 1.4 or newer
-AC_PROG_SED
-
-AC_PATH_PROG(CUPS_CONFIG, cups-config)
-
-if test x$CUPS_CONFIG = x; then
-  AC_MSG_ERROR([cups-config not found])
-fi
-
-CUPS_API_VERSION=`$CUPS_CONFIG --api-version`
-CUPS_API_MAJOR=`echo $ECHO_N $CUPS_API_VERSION | cut -d . -f 1`
-CUPS_API_MINOR=`echo $ECHO_N $CUPS_API_VERSION | cut -d . -f 2`
-
-AC_CHECK_HEADERS([cups/cups.h cups/http.h cups/ipp.h cups/ppd.h],,
-                 AC_MSG_ERROR([CUPS headers not found]))
-
-if ! test $CUPS_API_MAJOR -gt 1 -o \
-          $CUPS_API_MAJOR -eq 1 -a $CUPS_API_MINOR -ge 4 ; then
-  AC_MSG_ERROR([CUPS 1.4 or newer not found])
-fi
-
-# https://bugzilla.gnome.org/show_bug.cgi?id=696766
-CUPS_CPPFLAGS=""
-if test $CUPS_API_MAJOR -gt 1 -o \
-        $CUPS_API_MAJOR -eq 1 -a $CUPS_API_MINOR -ge 6 ; then
-   CUPS_CPPFLAGS=-D_PPD_DEPRECATED=""
-fi
-
-CUPS_CFLAGS=`$CUPS_CONFIG --cflags | $SED -e 's/-O\w*//g' -e 's/-m\w*//g'`
-CUPS_LIBS=`$CUPS_CONFIG --libs`
-AC_SUBST(CUPS_CPPFLAGS)
-AC_SUBST(CUPS_CFLAGS)
-AC_SUBST(CUPS_LIBS)
 
 # Optional dependency for the user accounts panel
 AC_ARG_WITH([cheese],
@@ -674,6 +690,12 @@ if test "x$build_color" = "xyes"; then
 	AC_MSG_NOTICE([** colord (Color panel)])
 else
 	AC_MSG_NOTICE([   Color panel disabled])
+fi
+
+if test "x$build_printers" = "xyes"; then
+	AC_MSG_NOTICE([** CUPS (Printers panel)])
+else
+	AC_MSG_NOTICE([   Printers panel disabled])
 fi
 
 
